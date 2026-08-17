@@ -55,5 +55,21 @@ X_val, X_test, y_val, y_test = train_test_split(X_temp,y_temp,test_size=0.50,str
 X_final_train = pd.concat([X_train, X_val],ignore_index=True)
 y_final_train = pd.concat([y_train, y_val],ignore_index=True)
 print("\nFinal training samples:", len(X_final_train))
-print("Held-out test samples:", len(X_test))
+print("test samples:", len(X_test))
 
+# Create the final NLP + ML pipeline
+# 1. Cleans the text
+# 2. Converts text into TF-IDF features
+# 3. Predicts the complaint category using Logistic Regression
+production_pipeline = Pipeline([("cleaner",FunctionTransformer(clean_texts,validate=False)),
+# convert cleaned text into TF-IDF features
+ ("tfidf",TfidfVectorizer( max_features=30000,ngram_range=(1, 2))),
+ # final model selected during jupyter notebook
+ ("model",LogisticRegression(C=1.0, max_iter=1000))])
+
+
+#train the final production model
+print("\nTraining final production model...")
+# train the complete pipeline using raw complaint text
+production_pipeline.fit( X_final_train,y_final_train)
+print("Training completed.")
