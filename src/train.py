@@ -99,6 +99,25 @@ print(sample_complaint[0])
 
 print("\nPredicted category:")
 print(sample_prediction[0])
-# create a sample complaint for checking the model's predictionand confidence scores
+# create a sample complaint for checking the models predictionand confidence scores
 sample_complaint = ["My card was charged twice and I do not recognize one of the transactions."]
 
+# predict the most likely complaint category
+prediction = production_pipeline.predict(sample_complaint)
+# get the probability for each possible category
+probabilities = production_pipeline.predict_proba(sample_complaint)[0]
+# get category names in the same order as the probabilities
+classes = production_pipeline.named_steps["model"].classes_
+# combine category names with their probabilities
+results = list(zip(classes, probabilities))
+# sort categories from highest probability to lowest probability
+results = sorted(results,key=lambda x: x[1],reverse=True)
+# Display the predicted category
+print("\nSample complaint:")
+print(sample_complaint[0])
+print("\nPredicted category:")
+print(prediction[0])
+# Display confidence scores for all categories
+print("\nCategory probabilities:")
+for category, probability in results:
+    print(f"{category}: {probability:.4f}")
