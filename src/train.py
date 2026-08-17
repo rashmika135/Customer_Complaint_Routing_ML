@@ -87,3 +87,18 @@ joblib.dump(production_pipeline,MODEL_PATH)
 
 print("\nModel saved successfully:")
 print(MODEL_PATH)
+
+# test the saved pipeline with one sample complaint
+# Create a sample raw customer complaint
+sample_complaint = ["My card was charged twice and I do not recognize one of the transactions."]
+
+# make a prediction 
+sample_prediction = production_pipeline.predict(sample_complaint)
+print("\nSample complaint:")
+print(sample_complaint[0])
+
+print("\nPredicted category:")
+print(sample_prediction[0])
+# create a sample complaint for checking the model's predictionand confidence scores
+sample_complaint = ["My card was charged twice and I do not recognize one of the transactions."]
+
