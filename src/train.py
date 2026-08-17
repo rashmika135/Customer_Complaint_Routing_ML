@@ -39,3 +39,21 @@ df = df.dropna( subset=["Product"])
 df = df.drop_duplicates(subset=["Consumer complaint narrative","Product"])
 df = df.reset_index(drop=True)
 print("Cleaned dataset shape:", df.shape)
+
+
+# input and target columns
+# X = the raw customer complaint text
+X = df["Consumer complaint narrative"]
+# y = the complaint category that the model should predict
+y = df["Product"]
+
+# create the train / validation / test split
+X_train, X_temp, y_train, y_temp = train_test_split(X,y,test_size=0.30,stratify=y,random_state=42)
+X_val, X_test, y_val, y_test = train_test_split(X_temp,y_temp,test_size=0.50,stratify=y_temp,random_state=42)
+
+# combine training and validation data
+X_final_train = pd.concat([X_train, X_val],ignore_index=True)
+y_final_train = pd.concat([y_train, y_val],ignore_index=True)
+print("\nFinal training samples:", len(X_final_train))
+print("Held-out test samples:", len(X_test))
+
