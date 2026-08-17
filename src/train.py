@@ -73,3 +73,17 @@ print("\nTraining final production model...")
 # train the complete pipeline using raw complaint text
 production_pipeline.fit( X_final_train,y_final_train)
 print("Training completed.")
+
+
+#create the models directory 
+MODEL_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+# Save the cleaner + TF-IDF vectorizer + Logistic Regression model
+
+joblib.dump(production_pipeline,MODEL_PATH)
+
+print("\nModel saved successfully:")
+print(MODEL_PATH)
