@@ -34,3 +34,18 @@ class PredictionResponse(BaseModel):
     confidence: float
     #  status
     status: str
+
+ # health checking
+@app.get('/health')
+def health_check():
+    return {'status': 'healthy','model_loaded': True}
+
+# prediction endpoint
+@app.post('/predict',response_model=PredictionResponse)
+def predict_complaint(request: ComplaintRequest):
+    # Remove unnecessary spaces
+    complaint = request.complaint.strip()
+    # Reject empty input
+    if not complaint:
+        raise HTTPException(status_code=400,
+            detail='Complaint text cannot be empty.')
