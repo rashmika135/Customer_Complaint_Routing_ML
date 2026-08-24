@@ -42,10 +42,38 @@ def health_check():
 
 # prediction endpoint
 @app.post('/predict',response_model=PredictionResponse)
-def predict_complaint(request: ComplaintRequest):
+    # Reject empty input
+def predict_complaint(
+    request: ComplaintRequest):
+
     # Remove unnecessary spaces
     complaint = request.complaint.strip()
     # Reject empty input
     if not complaint:
         raise HTTPException(status_code=400,
             detail='Complaint text cannot be empty.')
+    try:
+
+        # Predict the most likely category
+        prediction = model.predict([complaint])[0]
+        # Get probabilities for all categories
+        probabilities = model.predict_proba([complaint])[0]
+        # Get highest probability
+        confidence = float(probabilities.max())
+
+        # Simple confidence-based routing rule
+        if confidence < 0.60:
+            status = 'Needs Review'
+        else:
+            status = 'Auto Routed'
+
+        # Return prediction result
+        return {
+            'predicted_category': prediction,
+            'confidence': round( confidence,4),
+            'status': status}
+
+    except Exception as error:
+
+        raise HTTPException(status_code=500,
+            detail=f'Prediction failed: {str(error)}')
