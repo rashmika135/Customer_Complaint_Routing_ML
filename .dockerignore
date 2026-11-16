@@ -1,0 +1,26 @@
+# Version control and local environment
+.git/
+.gitignore
+venv/
+.venv/
+env/
+.env
+.env.*
+
+# Python and test caches
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Files not needed to serve predictions
+data/
+notebooks/
+experiments/
+tests/
+*.ipynb
+*.log
+src/train.py
+src/evaluate.py
+
+# Keep src/preprocessing.py, frontend/ and models/complaint_classifier.pkl.

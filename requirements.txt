@@ -1,0 +1,14 @@
+# FastAPI application
+fastapi
+uvicorn
+
+# Saved machine learning model
+scikit-learn
+joblib
+
+# Dataset preparation and evaluation
+pandas
+
+# API tests
+pytest
+httpx
