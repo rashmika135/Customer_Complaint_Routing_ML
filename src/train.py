@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
 # get the text preprocessing function from preprocessing.py
-from preprocessing import clean_texts
+from src.preprocessing import clean_texts
 
 
 # project paths

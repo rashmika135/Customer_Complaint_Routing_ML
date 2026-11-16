@@ -1,79 +1,62 @@
-
+import logging
 from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-import joblib
+
+from app.predict import get_prediction
 
 
-#  Define project paths
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-MODEL_PATH = (PROJECT_ROOT/ 'models'/ 'complaint_classifier.pkl')
+FRONTEND_DIR = PROJECT_ROOT / "frontend"
+
+app = FastAPI(
+    title="Customer Complaint Routing API",
+    description="API for classifying customer complaints using NLP",
+    version="1.0.0"
+)
+
+logger = logging.getLogger(__name__)
+
+# Serve the frontend CSS and JavaScript
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 
-# Create the FastAPI application
-app = FastAPI(title='Customer Complaint Routing API',
-    description=('NLP-based API for classifying customer complaints '
-                 'into financial product categories.'),version='1.0.0')
-
-
-
-#Load the trained saved model
-model = joblib.load(MODEL_PATH)
-
-
-#Define request structure
 class ComplaintRequest(BaseModel):
-    # Complaint text sent by user
     complaint: str
 
-# Define response structure
+
 class PredictionResponse(BaseModel):
-    # Predicted  category
     predicted_category: str
-    # Highest prediction probability
     confidence: float
-    #  status
     status: str
 
- # health checking
-@app.get('/health')
+
+# Open the frontend at http://127.0.0.1:8000/
+@app.get("/", include_in_schema=False)
+def home():
+    return FileResponse(FRONTEND_DIR / "index.html")
+
+
+@app.get("/health")
 def health_check():
-    return {'status': 'healthy','model_loaded': True}
+    return {"status": "healthy", "model_loaded": True}
 
-# prediction endpoint
-@app.post('/predict',response_model=PredictionResponse)
-    # Reject empty input
-def predict_complaint(
-    request: ComplaintRequest):
 
-    # Remove unnecessary spaces
+@app.post("/predict", response_model=PredictionResponse)
+def predict_complaint(request: ComplaintRequest):
     complaint = request.complaint.strip()
-    # Reject empty input
+
     if not complaint:
-        raise HTTPException(status_code=400,
-            detail='Complaint text cannot be empty.')
+        raise HTTPException(status_code=400, detail="Complaint text cannot be empty.")
+
+    if len(complaint) > 10000:
+        raise HTTPException(status_code=400, detail="Complaint text is too long.")
+
     try:
-
-        # Predict the most likely category
-        prediction = model.predict([complaint])[0]
-        # Get probabilities for all categories
-        probabilities = model.predict_proba([complaint])[0]
-        # Get highest probability
-        confidence = float(probabilities.max())
-
-        # Simple confidence-based routing rule
-        if confidence < 0.60:
-            status = 'Needs Review'
-        else:
-            status = 'Auto Routed'
-
-        # Return prediction result
-        return {
-            'predicted_category': prediction,
-            'confidence': round( confidence,4),
-            'status': status}
-
-    except Exception as error:
-
-        raise HTTPException(status_code=500,
-            detail=f'Prediction failed: {str(error)}')
+        return get_prediction(complaint)
+    except Exception:
+        logger.exception("Prediction failed")
+        raise HTTPException(status_code=500, detail="Unable to process the complaint.")
